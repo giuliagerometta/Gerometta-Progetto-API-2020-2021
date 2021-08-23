@@ -2,6 +2,8 @@
 #include<stdlib.h>
 #include <string.h>
 #define MAX 1000
+#define AGGIUNGI 14
+#define TOPK 5
 
 typedef struct nodo{
     int num;
@@ -20,37 +22,49 @@ void mergeSort(int[], int, int, int);
 
 int main(int argc, char* argv[]) {
     FILE* fp;
+    char aggiungi[] = "AggiungiGrafo";
+    char final[] = "TopK";
     char str[MAX];
     char *read = NULL;
+    char *end = ",";
     int *res = NULL;
-
 
     if(argc==2){
         fp = fopen(argv[1], "r");
         if(fp!=NULL){
-            fscanf(fp, "%d", &d);
-            printf("%d\n", d);
-            fscanf(fp, "%d", &len);
-            printf("%d\n", len);
-
             fgets(str, MAX, fp);
+            read = str;
+            d = strtol(read, &read, 10);
+            len = strtol(read, &read, 10);
+
+            fgets(str, AGGIUNGI, fp);
 
             int mat[d][d];
 
-            while(strcmp(str, "TopK")!=0){
-                if(strcmp(str, "AggiungiGrafo")==0){
+            while(strcmp(str, final)!=0){
+                if(strcmp(str, aggiungi)==0){
                     counter++;
+//debuggato fin qui
 
-                    for(int i=0; i<d; i++){
-                        fgets(read, '\0', fp);
-                        for(int j=0; j<d; j++){
-                            mat[i][j] = atoi(read);
-                            fgets(read, '\0', fp);
+                    for(int i=0; i<=d; i++){
+                        fgets(str, MAX, fp);
+                        read = str;
+                        printf("%s\n", read);
+                        for(int j=0; j<d; j++) {
+                            mat[i][j] = strtol(read, &end, 10);
                         }
                     }
 
-                    fgets(read, '\0', fp);
+                    for(int i=0; i<d; i++){
+                        for(int j=0; j<d; j++){
+                            printf("%7d", mat[i][j]);
+                        }
+                        printf("\n");
+                    }
+
                 }
+
+
                 res = malloc(sizeof(int));
                 res[counter-1]=cammino_minimo(mat);
             }
