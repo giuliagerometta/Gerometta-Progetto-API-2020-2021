@@ -3,6 +3,7 @@
 #include <string.h>
 #define MAX 1000
 #define AGGIUNGI 14
+#define AGGIUNGIGRAFO "AggiungiGrafo"
 #define TOPK 5
 
 typedef struct nodo{
@@ -21,63 +22,57 @@ void merge(int[], int, int, int, int);
 void mergeSort(int[], int, int, int);
 
 int main(int argc, char* argv[]) {
-    FILE* fp;
-    char aggiungi[] = "AggiungiGrafo";
     char final[] = "TopK";
+    char aggiungi[] = "AggiungiGrafo";
     char str[MAX];
-    char *read = NULL;
-    char *end = ",";
+    char *end;
     int *res = NULL;
+    char* f;
+    int cacca;
 
-    if(argc==2){
-        fp = fopen(argv[1], "r");
-        if(fp!=NULL){
-            fgets(str, MAX, fp);
-            read = str;
-            d = strtol(read, &read, 10);
-            len = strtol(read, &read, 10);
+    f = fgets(str, MAX, stdin);
+    if(f){
+        d = strtol(str, &end, 10);
+        len = strtol(end, &end, 10);
+    }
 
-            fgets(str, AGGIUNGI, fp);
+    f = fgets(str, AGGIUNGI, stdin);
+    if(f){
+        str[strlen(str)] = '\0';
 
-            int mat[d][d];
+        int mat[d][d];
 
-            while(strcmp(str, final)!=0){
-                if(strcmp(str, aggiungi)==0){
-                    counter++;
-//debuggato fin qui
+        while(strcmp(str, final)!=0){
+            if(strcmp(str, AGGIUNGIGRAFO)==0){
+                counter++;
 
-                    for(int i=0; i<=d; i++){
-                        fgets(str, MAX, fp);
-                        read = str;
-                        printf("%s\n", read);
-                        for(int j=0; j<d; j++) {
-                            mat[i][j] = strtol(read, &end, 10);
-                        }
-                    }
-
+                f = fgets(str, MAX, stdin);
+                if(f){
                     for(int i=0; i<d; i++){
-                        for(int j=0; j<d; j++){
-                            printf("%7d", mat[i][j]);
+                        f = fgets(str, MAX, stdin);
+                        if(f){
+                            for(int j=0; j<d; j++) {
+                                if(j==0)
+                                    mat[i][j] = strtol(str, &end, 10);
+                                else
+                                    mat[i][j] = strtol(end+1, &end, 10);
+                            }
                         }
-                        printf("\n");
                     }
-
                 }
-
-
-                res = malloc(sizeof(int));
-                res[counter-1]=cammino_minimo(mat);
             }
+            //debuggato fin qui
+            res = malloc(sizeof(int));
+            res[counter-1]=cammino_minimo(mat);
+        }
+    }
 
-            mergeSort(res, 0, counter, d);
 
-            for(int i=0; i<len; i++){
-                printf("%d ", res[i]);
-            }
-        }else printf("errore apertura file\n");
-    }else printf("errore numero parametri\n");
+    mergeSort(res, 0, counter, d);
 
-    fclose(fp);
+    for(int i=0; i<len; i++){
+        printf("%d ", res[i]);
+    }
     return 0;
 }
 
