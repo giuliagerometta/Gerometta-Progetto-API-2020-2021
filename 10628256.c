@@ -5,25 +5,18 @@
 #define AGGIUNGIGRAFO "AggiungiGrafo"
 #define TOPK "TopK"
 
-typedef struct nodo{
-    int num;
-    struct nodo* next;
-}lista; //nodi da etichettare
-
 int counter = 0;
 int d, len;
 int* pesi;
 
 int cammino_minimo(int mat[][d]);
-void inserisci_in_ordine(lista*, int);
-lista* rimuovi_nodo(lista*, int);
-//void build_max_heap(int res[len]);
 void max_heapify(int res[len], int n);
 
 int main(int argc, char* argv[]) {
     char str[MAX];
     char *end;
     char* f;
+    int x;
 
     f = fgets(str, MAX, stdin);
     if(f){
@@ -57,7 +50,9 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
-                max_heapify(res, cammino_minimo(mat));
+                x = cammino_minimo(mat);
+                //debuggato fino a qui (il cammino sembra venire corretto)
+                max_heapify(res, x);
 
                 f = fgets(str, MAX, stdin);
                 str[strlen(str)-1] = '\0';
@@ -75,99 +70,57 @@ int main(int argc, char* argv[]) {
 }
 
 int cammino_minimo(int mat[][d]){
-    int cm=0, tmp=0, min, min_index, c;
-    lista* da_etichettare = NULL;
-    lista* etichettati = NULL;
+    int cm=0, tmp=0, min, min_index, count;
+    int da_etichettare[d];
 
     pesi = malloc(sizeof(int)*d);
-
-    inserisci_in_ordine(etichettati, 0);
-
+    pesi[0] = -1;
+    da_etichettare[0] = -1;
     for(int i=1; i<d; i++){
-        inserisci_in_ordine(da_etichettare, i);
-    }
-
-    for(int i=0; i<d; i++){
         pesi[i] = -1;
+        da_etichettare[i] = i;
     }
 
     while(1){
-        min = mat[tmp][0];
+        count=0;
         for(int j=0; j<d; j++){
-            if(mat[tmp][j] < min){
+            if(mat[tmp][j]!=0 && tmp!=j && da_etichettare[j]!=-1){
                 min = mat[tmp][j];
                 min_index = j;
+                if(mat[tmp][j]<min){
+                    min = mat[tmp][j];
+                    min_index = j;
+                }
             }
         }
 
-        if(pesi[min_index]>min || pesi[min_index]==-1){
+        if(pesi[min_index]<min || pesi[min_index]==-1){
             pesi[min_index] = min;
             if(tmp!=0){
                 pesi[min_index] += pesi[tmp];
             }
         }
 
+        da_etichettare[tmp] = -1;
 
-        min = pesi[0];
-        for(int k=0; k<d; k++){
-            if(pesi[k]<min){
-                min = pesi[k];
-                min_index = k;
-            }
+        for(int i=0; i<d; i++){
+            if(pesi[i]!=-1)
+                count++;
         }
-        inserisci_in_ordine(etichettati, min_index);
-
-        tmp = min_index;
-
-        for(int k=0; k<d; k++){
-            c = 0;
-            if(mat[tmp][k] == 0)
-                c++;
-        }
-
-        if(c == d){
+        count++;
+        if(count == d)
             break;
-        }
+        else
+            tmp = min_index;
+
     }
+
     for(int i=0; i<d; i++){
-        cm += pesi[i];
+        if(pesi[i]!=-1)
+            cm += pesi[i];
     }
 
     return cm;
-}
-
-void inserisci_in_ordine(lista* l, int n){
-    lista *tmp;
-
-    if(!l){
-        l = malloc(sizeof(lista));
-        l->num=n;
-        l->next=NULL;
-        return;
-    }
-    if(l->num > n){
-        tmp = malloc(sizeof(lista));
-        tmp->num = n;
-        tmp->next = l;
-        l = tmp;
-        return;
-    }
-
-    inserisci_in_ordine(l->next, n);
-}
-
-lista* rimuovi_nodo(lista* l, int n){
-    if(l==NULL){
-        return l;
-    }
-    if(l->num == n){
-        lista* tmp = l;
-        l = l->next;
-        free(tmp);
-    }else{
-        l->next = rimuovi_nodo(l->next, n);
-        return l;
-    }
 }
 
 
