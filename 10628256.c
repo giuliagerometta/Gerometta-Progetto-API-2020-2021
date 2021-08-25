@@ -2,9 +2,8 @@
 #include<stdlib.h>
 #include <string.h>
 #define MAX 1000
-#define AGGIUNGI 14
 #define AGGIUNGIGRAFO "AggiungiGrafo"
-#define TOPK 5
+#define TOPK "TopK"
 
 typedef struct nodo{
     int num;
@@ -15,20 +14,16 @@ int counter = 0;
 int d, len;
 int* pesi;
 
-int cammino_minimo(int** mat);
+int cammino_minimo(int mat[][d]);
 void inserisci_in_ordine(lista*, int);
 lista* rimuovi_nodo(lista*, int);
-void merge(int[], int, int, int, int);
-void mergeSort(int[], int, int, int);
+//void build_max_heap(int res[len]);
+void max_heapify(int res[len], int n);
 
 int main(int argc, char* argv[]) {
-    char final[] = "TopK";
-    char aggiungi[] = "AggiungiGrafo";
     char str[MAX];
     char *end;
-    int *res = NULL;
     char* f;
-    int cacca;
 
     f = fgets(str, MAX, stdin);
     if(f){
@@ -36,17 +31,18 @@ int main(int argc, char* argv[]) {
         len = strtol(end, &end, 10);
     }
 
-    f = fgets(str, AGGIUNGI, stdin);
+    int mat[d][d];
+    int res[len];
+
+    f = fgets(str, MAX, stdin);
+    str[strlen(str)-1] = '\0';
+
     if(f){
-        str[strlen(str)] = '\0';
-
-        int mat[d][d];
-
-        while(strcmp(str, final)!=0){
-            if(strcmp(str, AGGIUNGIGRAFO)==0){
+        while(strcmp(str, TOPK)!=0){
+            while(strcmp(str, AGGIUNGIGRAFO)==0){
                 counter++;
 
-                f = fgets(str, MAX, stdin);
+                //f = fgets(str, MAX, stdin);
                 if(f){
                     for(int i=0; i<d; i++){
                         f = fgets(str, MAX, stdin);
@@ -60,23 +56,25 @@ int main(int argc, char* argv[]) {
                         }
                     }
                 }
+
+                max_heapify(res, cammino_minimo(mat));
+
+                f = fgets(str, MAX, stdin);
+                str[strlen(str)-1] = '\0';
+                if(f)
+                    continue;
             }
-            //debuggato fin qui
-            res = malloc(sizeof(int));
-            res[counter-1]=cammino_minimo(mat);
         }
     }
-
-
-    mergeSort(res, 0, counter, d);
 
     for(int i=0; i<len; i++){
         printf("%d ", res[i]);
     }
+
     return 0;
 }
 
-int cammino_minimo(int** mat){
+int cammino_minimo(int mat[][d]){
     int cm=0, tmp=0, min, min_index, c;
     lista* da_etichettare = NULL;
     lista* etichettati = NULL;
@@ -172,44 +170,23 @@ lista* rimuovi_nodo(lista* l, int n){
     }
 }
 
-void merge(int vett[], int start, int mid, int end, int len){
-    int i, j, k, tmp[len];
-    i = start;
-    j = mid+1;
-    k = 0;
 
-    while (i<=mid && j<=end) {
-        if (vett[i]<vett[j]) {
-            tmp[k] = vett[i];
-            i++;
-        } else {
-            tmp[k] = vett[j];
-            j++;
-        }
-        k++;
-    }
-    while (i <= mid) {
-        tmp[k] = vett[i];
-        i++;
-        k++;
-    }
-    while (j <= end) {
-        tmp[k] = vett[j];
-        j++;
-        k++;
-    }
-    for (k=start; k<=end; k++)
-        vett[k] = tmp[k-start];
-}
+void max_heapify(int res[len], int num){
+    int l = 2*num;
+    int r = (2*num)+1;
+    int max;
+    int tmp;
 
-void mergeSort(int ord[], int start, int end, int len){
-    int mid;
-    if (start < end) {
-        mid = (start + end)/2;
-        mergeSort(ord, start, mid, len);
-        mergeSort(ord, mid+1, end, len);
-        merge(ord, start, mid, end, len);
+    if(l<=len && res[l]>res[num])
+        max = l;
+    else max = num;
+
+    if(r<=len && res[r]>res[max])
+        max = r;
+    if(max != num){
+        tmp = res[num];
+        res[num] = res[max];
+        res[max] = tmp;
+        max_heapify(res, max);
     }
 }
-
-
