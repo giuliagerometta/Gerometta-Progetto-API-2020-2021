@@ -103,9 +103,7 @@ int main() {
 int cammino_minimo(int mat[][d]){
     int cm=0, tmp=0, min, min_index=0, count, tmp_min, tmp_min_index;
     int da_etichettare[d];
-    int tutti_etichettati;
     int all_zeros=0;
-    int conta_etichettati=0;
 
     pesi = malloc(sizeof(int)*d);
     pesi[0] = -1;
@@ -115,18 +113,19 @@ int cammino_minimo(int mat[][d]){
         da_etichettare[i] = i;
     }
 
-    for(int k=0; k<d; k++){
-        if(mat[0][k]==0)
+    for(int k=1; k<d; k++){
+        if(mat[0][k]==0){
             all_zeros++;
-        if(all_zeros==d)
-            return 0;
+            if(all_zeros==d)
+                return 0;
+        }else
+            break;
     }
 
     count=0;
     while(1){
         min = 0;
         count++;
-        tutti_etichettati=1;
 
         for(int j=0; j<d; j++){
             if(mat[tmp][j]!=0 && tmp!=j && da_etichettare[j]!=-1){
@@ -156,12 +155,7 @@ int cammino_minimo(int mat[][d]){
 
         da_etichettare[min_index] = -1;
 
-        for(int i=0; i<d; i++){
-            if(da_etichettare[i]!=-1)
-                tutti_etichettati=0;
-        }
-
-        if(count == d || tutti_etichettati==1)
+        if(count == d)
             break;
         else
             tmp = min_index;
@@ -177,8 +171,8 @@ int cammino_minimo(int mat[][d]){
 
 
 void max_heap_insert(grafo res[len], grafo num){
-    int i=0;
-    res[i] = num;
+    res[0] = res[2];
+    res[2] = num;
     build_max_heap(res);
 }
 
@@ -203,7 +197,7 @@ void max_heapify(grafo res[len], int num){
     }
 }
 void build_max_heap(grafo res[len]){
-    for(int i=len; i>=0; i--){
+    for(int i=len/2-1; i>=0; i--){
         max_heapify(res, i);
     }
 }
