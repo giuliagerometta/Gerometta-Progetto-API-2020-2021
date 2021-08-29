@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include<stdlib.h>
 #include <string.h>
-#define MAX 1000
+#define MAX 3000
 #define AGGIUNGIGRAFO "AggiungiGrafo"
 #define TOPK "TopK"
 
@@ -36,7 +36,7 @@ int main() {
 
     for(int i=0; i<=len; i++){
         res[i].peso = -1;
-        res[i].index = 0;
+        res[i].index = -1;
     }
 
     f = fgets(str, MAX, stdin);
@@ -45,50 +45,58 @@ int main() {
     if(f){
         if(strcmp(str, TOPK)==0){
             printf("\n");
-            return 0;
+            f = fgets(str, MAX, stdin);
+            str[strlen(str)-1] = '\0';
         }
-        while(strcmp(str, TOPK)!=0){
-            while(strcmp(str, AGGIUNGIGRAFO)==0){
-                counter++;
-                x.index = counter-1;
+        while(strcmp(str, AGGIUNGIGRAFO)==0){
+            counter++;
+            x.index = counter-1;
 
-                if(f){
-                    for(int i=0; i<d; i++){
-                        f = fgets(str, MAX, stdin);
-                        if(f){
-                            for(int j=0; j<d; j++) {
-                                if(j==0)
-                                    mat[i][j] = strtol(str, &end, 10);
-                                else
-                                    mat[i][j] = strtol(end+1, &end, 10);
-                            }
+            if(f){
+                for(int i=0; i<d; i++){
+                    f = fgets(str, MAX, stdin);
+                    if(f){
+                        for(int j=0; j<d; j++) {
+                            if(j==0)
+                                mat[i][j] = strtol(str, &end, 10);
+                            else
+                                mat[i][j] = strtol(end+1, &end, 10);
                         }
                     }
                 }
+            }
 
-                x.peso = cammino_minimo(mat);
+            x.peso = cammino_minimo(mat);
 
-                if(counter<=len){
-                    res[counter-1] = x;
-                    if(counter==len)
-                        build_max_heap(res);
-                }
+            if(counter<=len){
+                res[counter-1] = x;
+                if(counter==len)
+                    build_max_heap(res);
+            }
 
-                if(res[0].peso>x.peso && counter>len)
-                    max_heap_insert(res, x);
+            if(res[0].peso>x.peso && counter>len)
+                max_heap_insert(res, x);
 
-                f = fgets(str, MAX, stdin);
-                str[strlen(str)-1] = '\0';
-                if(f)
+            f = fgets(str, MAX, stdin);
+            str[strlen(str)-1] = '\0';
+            if(f){
+                if(strcmp(str, TOPK)==0){
+                    for(int i=0; i<len && res[i].index!=-1; i++){
+                        if(counter<len && i==counter-1){
+                            printf("%d", res[i].index);
+                        }else{
+                            printf("%d ", res[i].index);
+                        }
+                    }
+                    printf("\n");
+                    f = fgets(str, MAX, stdin);
+                    str[strlen(str)-1] = '\0';
+
+                }else
                     continue;
             }
         }
     }
-
-    for(int i=0; i<len; i++){
-        printf("%d ", res[i].index);
-    }
-
     return 0;
 }
 
@@ -97,6 +105,7 @@ int cammino_minimo(int mat[][d]){
     int da_etichettare[d];
     int tutti_etichettati;
     int all_zeros=0;
+    int conta_etichettati=0;
 
     pesi = malloc(sizeof(int)*d);
     pesi[0] = -1;
@@ -126,10 +135,8 @@ int cammino_minimo(int mat[][d]){
                 }
                 else if(pesi[j]>(pesi[tmp] + mat[tmp][j]) || pesi[j]==-1)
                     pesi[j] = pesi[tmp] + mat[tmp][j];
-
             }
         }
-
 
         for (int i = 0; i < d; i++) {
             if (da_etichettare[i] != -1 && pesi[i]!=-1) {
