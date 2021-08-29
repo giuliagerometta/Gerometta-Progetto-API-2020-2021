@@ -9,14 +9,21 @@ int counter = 0;
 int d, len;
 int* pesi;
 
-int cammino_minimo(int mat[][d]);
-void max_heapify(int res[len], int n);
+typedef struct{
+    int peso;
+    int index;
+}grafo;
 
-int main(int argc, char* argv[]) {
+int cammino_minimo(int[][0]);
+void max_heap_insert(grafo [], grafo);
+void max_heapify(grafo [], int);
+void build_max_heap(grafo []);
+
+int main() {
     char str[MAX];
     char *end;
     char* f;
-    int x;
+    grafo x;
 
     f = fgets(str, MAX, stdin);
     if(f){
@@ -25,17 +32,26 @@ int main(int argc, char* argv[]) {
     }
 
     int mat[d][d];
-    int res[len];
+    grafo res[len];
+
+    for(int i=0; i<=len; i++){
+        res[i].peso = -1;
+        res[i].index = 0;
+    }
 
     f = fgets(str, MAX, stdin);
     str[strlen(str)-1] = '\0';
 
     if(f){
+        if(strcmp(str, TOPK)==0){
+            printf("\n");
+            return 0;
+        }
         while(strcmp(str, TOPK)!=0){
             while(strcmp(str, AGGIUNGIGRAFO)==0){
                 counter++;
+                x.index = counter-1;
 
-                //f = fgets(str, MAX, stdin);
                 if(f){
                     for(int i=0; i<d; i++){
                         f = fgets(str, MAX, stdin);
@@ -50,9 +66,16 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
-                x = cammino_minimo(mat);
-                //debuggato fino a qui (il cammino sembra venire corretto)
-                max_heapify(res, x);
+                x.peso = cammino_minimo(mat);
+
+                if(counter<=len){
+                    res[counter-1] = x;
+                    if(counter==len)
+                        build_max_heap(res);
+                }
+
+                if(res[0].peso>x.peso && counter>len)
+                    max_heap_insert(res, x);
 
                 f = fgets(str, MAX, stdin);
                 str[strlen(str)-1] = '\0';
@@ -63,15 +86,17 @@ int main(int argc, char* argv[]) {
     }
 
     for(int i=0; i<len; i++){
-        printf("%d ", res[i]);
+        printf("%d ", res[i].index);
     }
 
     return 0;
 }
 
 int cammino_minimo(int mat[][d]){
-    int cm=0, tmp=0, min, min_index, count;
+    int cm=0, tmp=0, min, min_index=0, count, tmp_min, tmp_min_index;
     int da_etichettare[d];
+    int tutti_etichettati;
+    int all_zeros=0;
 
     pesi = malloc(sizeof(int)*d);
     pesi[0] = -1;
@@ -81,38 +106,58 @@ int cammino_minimo(int mat[][d]){
         da_etichettare[i] = i;
     }
 
+    for(int k=0; k<d; k++){
+        if(mat[0][k]==0)
+            all_zeros++;
+        if(all_zeros==d)
+            return 0;
+    }
+
+    count=0;
     while(1){
-        count=0;
+        min = 0;
+        count++;
+        tutti_etichettati=1;
+
         for(int j=0; j<d; j++){
             if(mat[tmp][j]!=0 && tmp!=j && da_etichettare[j]!=-1){
-                min = mat[tmp][j];
-                min_index = j;
-                if(mat[tmp][j]<min){
-                    min = mat[tmp][j];
-                    min_index = j;
+                if(tmp==0){
+                    pesi[j] = mat[tmp][j];
+                }
+                else if(pesi[j]>(pesi[tmp] + mat[tmp][j]) || pesi[j]==-1)
+                    pesi[j] = pesi[tmp] + mat[tmp][j];
+
+            }
+        }
+
+
+        for (int i = 0; i < d; i++) {
+            if (da_etichettare[i] != -1 && pesi[i]!=-1) {
+                tmp_min = pesi[i];
+                tmp_min_index = i;
+                if(min==0){
+                    min = tmp_min;
+                    min_index = tmp_min_index;
+                }else{
+                    if(tmp_min<min){
+                        min = tmp_min;
+                        min_index = tmp_min_index;
+                    }
                 }
             }
         }
 
-        if(pesi[min_index]<min || pesi[min_index]==-1){
-            pesi[min_index] = min;
-            if(tmp!=0){
-                pesi[min_index] += pesi[tmp];
-            }
-        }
-
-        da_etichettare[tmp] = -1;
+        da_etichettare[min_index] = -1;
 
         for(int i=0; i<d; i++){
-            if(pesi[i]!=-1)
-                count++;
+            if(da_etichettare[i]!=-1)
+                tutti_etichettati=0;
         }
-        count++;
-        if(count == d)
+
+        if(count == d || tutti_etichettati==1)
             break;
         else
             tmp = min_index;
-
     }
 
     for(int i=0; i<d; i++){
@@ -124,22 +169,34 @@ int cammino_minimo(int mat[][d]){
 }
 
 
-void max_heapify(int res[len], int num){
+void max_heap_insert(grafo res[len], grafo num){
+    int i=0;
+    res[i] = num;
+    build_max_heap(res);
+}
+
+void max_heapify(grafo res[len], int num){
     int l = 2*num;
-    int r = (2*num)+1;
+    int r = 2*num + 1;
     int max;
-    int tmp;
+    grafo tmp;
 
-    if(l<=len && res[l]>res[num])
+    if(l<len && res[l].peso>res[num].peso)
         max = l;
-    else max = num;
+    else
+        max = num;
 
-    if(r<=len && res[r]>res[max])
+    if(r<len && res[r].peso>res[max].peso)
         max = r;
+
     if(max != num){
         tmp = res[num];
         res[num] = res[max];
         res[max] = tmp;
-        max_heapify(res, max);
+    }
+}
+void build_max_heap(grafo res[len]){
+    for(int i=len; i>=0; i--){
+        max_heapify(res, i);
     }
 }
