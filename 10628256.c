@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include<stdlib.h>
 #include <string.h>
+
 #define MAX 3000
 #define AGGIUNGIGRAFO "AggiungiGrafo"
 #define TOPK "TopK"
@@ -8,6 +9,9 @@
 int counter = 0;
 int d, len;
 int* pesi;
+char str[MAX];
+char *end;
+char* f;
 
 typedef struct{
     int peso;
@@ -15,14 +19,10 @@ typedef struct{
 }grafo;
 
 int cammino_minimo(int[][0]);
-void max_heap_insert(grafo [], grafo);
 void max_heapify(grafo [], int);
 void build_max_heap(grafo []);
 
 int main() {
-    char str[MAX];
-    char *end;
-    char* f;
     grafo x;
 
     f = fgets(str, MAX, stdin);
@@ -74,8 +74,10 @@ int main() {
                     build_max_heap(res);
             }
 
-            if(res[0].peso>x.peso && counter>len)
-                max_heap_insert(res, x);
+            if(res[0].peso>x.peso && counter>len){
+                res[0] = x;
+                max_heapify(res, 0);
+            }
 
             f = fgets(str, MAX, stdin);
             str[strlen(str)-1] = '\0';
@@ -97,6 +99,7 @@ int main() {
             }
         }
     }
+
     return 0;
 }
 
@@ -111,16 +114,13 @@ int cammino_minimo(int mat[][d]){
     for(int i=1; i<d; i++){
         pesi[i] = -1;
         da_etichettare[i] = i;
-    }
-
-    for(int k=1; k<d; k++){
-        if(mat[0][k]==0){
+        if(mat[0][i]==0){
             all_zeros++;
             if(all_zeros==d)
                 return 0;
-        }else
-            break;
+        }
     }
+
 
     count=0;
     while(1){
@@ -138,7 +138,7 @@ int cammino_minimo(int mat[][d]){
         }
 
         for (int i = 0; i < d; i++) {
-            if (da_etichettare[i] != -1 && pesi[i]!=-1) {
+            if (da_etichettare[i]!=-1 && pesi[i]!=-1) {
                 tmp_min = pesi[i];
                 tmp_min_index = i;
                 if(min==0){
@@ -169,16 +169,9 @@ int cammino_minimo(int mat[][d]){
     return cm;
 }
 
-
-void max_heap_insert(grafo res[len], grafo num){
-    res[0] = res[2];
-    res[2] = num;
-    build_max_heap(res);
-}
-
 void max_heapify(grafo res[len], int num){
-    int l = 2*num;
-    int r = 2*num + 1;
+    int l = 2*num + 1;
+    int r = 2*num + 2;
     int max;
     grafo tmp;
 
@@ -194,10 +187,11 @@ void max_heapify(grafo res[len], int num){
         tmp = res[num];
         res[num] = res[max];
         res[max] = tmp;
+        max_heapify(res, max);
     }
 }
 void build_max_heap(grafo res[len]){
-    for(int i=len/2-1; i>=0; i--){
+    for(int i=len-1; i>=0; i--){
         max_heapify(res, i);
     }
 }
